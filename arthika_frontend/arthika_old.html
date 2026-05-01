@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Arthika</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #f4f6f8;
+    }
+
+    /* ---------------- LOGIN PAGE ---------------- */
+    .login-wrapper {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-box {
+      width: 420px;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .login-box h1 {
+      text-align: center;
+      color: #007bff;
+      margin-bottom: 25px;
+    }
+
+    .login-box input,
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+    }
+
+    .login-box button {
+      background: #007bff;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .login-box button:hover {
+      background: #0056b3;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+    }
+
+    /* ---------------- DASHBOARD ---------------- */
+    .dashboard {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #343a40;
+      color: white;
+      padding-top: 20px;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .sidebar a:hover {
+      background: #495057;
+    }
+
+    .content {
+      flex: 1;
+      padding: 25px;
+      background: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background: #e9ecef;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+<div class="card">
+    <h1 id="title">Arthika</h1>
+
+    <form id="authForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+
+        <!-- Email appears ONLY for Register -->
+        <input type="email" id="email" placeholder="Email" style="display:none;">
+
+        <button type="submit" id="submitBtn" onclick="login()">Login</button>
+    </form>
+
+    <!-- THIS was missing in your UI -->
+    <div class="toggle" onclick="toggleMode()" id="toggleText">
+        New user? Register
+    </div>
+</div>
+<!-- LOGIN PAGE -->
+<div class="login-wrapper" id="loginPage">
+  <div class="login-box">
+    <h1>Arthika</h1>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="msg" class="error"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD (hidden by default) -->
+<div class="dashboard hidden" id="dashboard">
+  <div class="sidebar">
+    <h2>Arthika</h2>
+    <a onclick="showPortfolio()">My Portfolio</a>
+    <a onclick="showAddStocks()">Add Stocks</a>
+    <a onclick="logout()">Logout</a>
+  </div>
+
+  <div class="content" id="contentArea"></div>
+</div>
+
+<script>
+    let isRegister = false;
+
+    function toggleMode() {
+        isRegister = !isRegister;
+
+        const email = document.getElementById("email");
+        const submitBtn = document.getElementById("submitBtn");
+        const toggleText = document.getElementById("toggleText");
+
+        if (isRegister) {
+            email.style.display = "block";
+            submitBtn.innerText = "Register";
+            toggleText.innerText = "Already have an account? Login";
+        } else {
+            email.style.display = "none";
+            submitBtn.innerText = "Login";
+            toggleText.innerText = "New user? Register";
+        }
+    }
+</script>
+
+<script>
+  const BASE_URL = "http://localhost:8000/arthika";
+
+  async function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    try {
+      const res = await fetch(`${BASE_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw data;
+
+      // SHOW DASHBOARD ONLY AFTER SUCCESS
+      document.getElementById("loginPage").classList.add("hidden");
+      document.getElementById("dashboard").classList.remove("hidden");
+      showPortfolio();
+
+    } catch (e) {
+      document.getElementById("msg").textContent =
+        e.detail || "Login failed";
+    }
+  }
+
+  function showPortfolio() {
+    document.getElementById("contentArea").innerHTML = `
+      <h2>My Portfolio</h2>
+      <table>
+        <tr>
+          <th>Stock</th>
+          <th>Quantity</th>
+          <th>Price (₹)</th>
+        </tr>
+        <tr>
+          <td>TCS</td>
+          <td>10</td>
+          <td>3850</td>
+        </tr>
+        <tr>
+          <td>INFY</td>
+          <td>15</td>
+          <td>1620</td>
+        </tr>
+      </table>
+    `;
+  }
+
+  function showAddStocks() {
+    document.getElementById("contentArea").innerHTML = `
+      <h2>Add Stocks</h2>
+      <input placeholder="Stock Name">
+      <input placeholder="Quantity">
+      <input placeholder="Price">
+      <button>Add</button>
+    `;
+  }
+
+  function logout() {
+    location.reload();
+  }
+</script>
+
+</body>
+</html>

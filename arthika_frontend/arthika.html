@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Arthika | Track smarter. Invest wiser.</title>
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color: white;
+}
+
+.container {
+    max-width: 650px;
+    margin: auto;
+    padding: 20px;
+}
+
+.hero {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 5px;
+}
+
+.hero p {
+    font-size: 18px;
+    color: #ddd;
+}
+
+.card {
+    background: white;
+    color: black;
+    padding: 20px;
+    margin-top: 25px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.2);
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 12px;
+    background: #1abc9c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #16a085;
+}
+
+.logoutBtn {
+    width: auto;
+    background: #e74c3c;
+}
+
+.logoutBtn:hover {
+    background: #c0392b;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table th {
+    background: #2c5364;
+    color: white;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="hero">
+
+<h1>Arthika</h1>
+
+<p>Track smarter. Invest wiser.</p>
+
+</div>
+
+
+<div class="header">
+
+<div></div>
+
+<button id="logoutBtn"
+class="logoutBtn hidden"
+onclick="logout()">
+
+Logout
+
+</button>
+
+</div>
+
+
+<div class="card" id="authCard">
+
+<h3>Register / Login</h3>
+
+<input id="username" placeholder="Username" />
+
+<input id="password"
+type="password"
+placeholder="Password" />
+
+<input id="email"
+placeholder="E-mail (required only for signup)" />
+
+<button onclick="registerUser()">
+
+Register
+
+</button>
+
+<button onclick="loginUser()">
+
+Login
+
+</button>
+
+</div>
+
+
+
+<div class="card hidden" id="stockCard">
+
+<h3>Add Stock</h3>
+
+<input id="name"
+placeholder="Stock Name (ex: TCS)" />
+
+<input id="quantity"
+placeholder="Quantity" />
+
+<input id="purchase_value"
+placeholder="Purchase Price" />
+
+<input id="present_value"
+placeholder="Current Price" />
+
+<button onclick="addStock()">
+
+Add Stock
+
+</button>
+
+</div>
+
+
+
+<div class="card hidden" id="portfolioCard">
+
+<h3>Your Portfolio</h3>
+
+<button onclick="loadPortfolio()">
+
+Refresh Portfolio
+
+</button>
+
+<table class="table"
+id="portfolioTable">
+
+<thead>
+
+<tr>
+
+<th>Name</th>
+
+<th>Quantity</th>
+
+<th>Purchase</th>
+
+<th>Present</th>
+
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<script>
+
+const BASE_URL = "http://localhost:8000";
+
+let token = localStorage.getItem("token");
+
+
+window.onload = () => {
+
+if(token){
+
+showStockUI();
+
+loadPortfolio();
+
+}
+
+};
+
+
+async function registerUser(){
+
+const username =
+document.getElementById("username").value;
+
+const password =
+document.getElementById("password").value;
+
+const email =
+document.getElementById("email").value;
+
+
+const response = await fetch(
+
+`${BASE_URL}/api/arthika/signup`,
+
+{
+
+method:"POST",
+
+headers:{ "Content-Type":"application/json" },
+
+body:JSON.stringify({
+
+username,password,email
+
+})
+
+}
+
+);
+
+
+const data = await response.json();
+
+
+if(!response.ok){
+
+alert(data.detail ||
+
+"Signup Failed");
+
+return;
+
+}
+
+
+alert("User registered successfully");
+
+}
+
+
+
+async function loginUser(){
+
+const username =
+document.getElementById("username").value;
+
+const password =
+document.getElementById("password").value;
+
+
+const response = await fetch(
+
+`${BASE_URL}/api/arthika/login`,
+
+{
+
+method:"POST",
+
+headers:{ "Content-Type":"application/json" },
+
+body:JSON.stringify({
+
+username,password
+
+})
+
+}
+
+);
+
+
+const data = await response.json();
+
+
+if(!response.ok){
+
+alert(data.detail ||
+
+"Login failed");
+
+return;
+
+}
+
+
+localStorage.setItem(
+
+"token",
+
+data.access_token
+
+);
+
+
+token = data.access_token;
+
+
+alert("Login successful");
+
+
+showStockUI();
+
+loadPortfolio();
+
+}
+
+
+
+function showStockUI(){
+
+document.getElementById("authCard")
+
+.classList.add("hidden");
+
+
+document.getElementById("stockCard")
+
+.classList.remove("hidden");
+
+
+document.getElementById("portfolioCard")
+
+.classList.remove("hidden");
+
+
+document.getElementById("logoutBtn")
+
+.classList.remove("hidden");
+
+}
+
+
+
+function logout(){
+
+localStorage.removeItem("token");
+
+token = null;
+
+location.reload();
+
+}
+
+
+
+async function addStock(){
+
+const name =
+document.getElementById("name").value;
+
+const quantity =
+document.getElementById("quantity").value;
+
+const purchase_value =
+document.getElementById("purchase_value").value;
+
+const present_value =
+document.getElementById("present_value").value;
+
+
+await fetch(
+
+`${BASE_URL}/api/arthika/${name}/stock`,
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json",
+
+"Authorization":`Bearer ${token}`
+
+},
+
+body:JSON.stringify({
+
+name,
+
+quantity,
+
+purchase_value,
+
+present_value
+
+})
+
+}
+
+);
+
+
+alert("Stock added successfully");
+
+
+loadPortfolio();
+
+}
+
+
+
+async function loadPortfolio(){
+
+const response = await fetch(
+
+`${BASE_URL}/api/arthika/stocks`,
+
+{
+
+headers:{
+
+"Authorization":`Bearer ${token}`
+
+}
+
+}
+
+);
+
+
+const data = await response.json();
+
+
+const table =
+
+document.querySelector(
+
+"#portfolioTable tbody"
+
+);
+
+
+table.innerHTML = "";
+
+
+data.forEach(stock=>{
+
+table.innerHTML += `
+
+<tr>
+
+<td>${stock.name}</td>
+
+<td>${stock.quantity}</td>
+
+<td>${stock.purchase_value}</td>
+
+<td>${stock.present_value}</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+</script>
+
+</body>
+
+</html>

@@ -1,2 +1,2 @@
 # arthika
-Financial App
+Financial Application
