@@ -6,6 +6,7 @@ from database import Base, engine
 import arthikaapi.models.users
 import arthikaapi.models.stocks
 from arthikaapi.middlewares import middlewares
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware #Cross Origin Resource Sharing
 
 
@@ -21,6 +22,8 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(docs_url="/arthika-docs", lifespan=lifespan, middleware=middlewares)
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 origins = [
     "http://localhost:3000",   # React app
