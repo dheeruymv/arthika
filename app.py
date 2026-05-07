@@ -23,7 +23,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(docs_url="/arthika-docs", lifespan=lifespan, middleware=middlewares)
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+#app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = [
     "http://localhost:3000",   # React app
