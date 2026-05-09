@@ -5,6 +5,7 @@ from arthikaapi.routers import users
 from database import Base, engine
 import arthikaapi.models.users
 import arthikaapi.models.stocks
+from fastapi.responses import FileResponse
 from arthikaapi.middlewares import middlewares
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware #Cross Origin Resource Sharing
@@ -25,6 +26,12 @@ app = FastAPI(docs_url="/arthika-docs", lifespan=lifespan, middleware=middleware
 
 #app.mount("/", StaticFiles(directory="static", html=True), name="static")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+#Serve the index.html
+
+@app.get("/")
+def serve_index():
+    return FileResponse("static/index.html")
 
 origins = [
     "http://localhost:3000",   # React app
