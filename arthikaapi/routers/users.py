@@ -6,6 +6,7 @@ from arthikaapi.security.jwt_handler import create_access_token
 from database import SessionLocal
 from arthikaapi.models.users import User
 from sqlalchemy.orm import Session
+from fastapi.responses import FileResponse
 from arthikaapi.exceptions.custom_exceptions import UserExistsException
 
 
@@ -57,3 +58,8 @@ def signup(newuser: NewUser, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error while signup")
     return {"msg": "Signup Successful"}
+
+
+@router.get("/")
+def serve_index():
+    return FileResponse("static/index.html")
