@@ -619,5 +619,198 @@ button{
 
 </div>
 
+<script>
+
+// const BASE_URL = "http://localhost:8000";
+const BASE_URL = window.location.origin;
+
+let token = localStorage.getItem("token");
+
+window.onload = () => {
+
+    if(token){
+        showStockUI();
+        loadPortfolio();
+    }
+
+};
+
+async function registerUser(){
+
+    const username =
+    document.getElementById("username").value;
+
+    const password =
+    document.getElementById("password").value;
+
+    const email =
+    document.getElementById("email").value;
+
+    const response = await fetch(
+        `${BASE_URL}/api/arthika/signup`,
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                username,password,email
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+        alert(data.detail || "Signup Failed");
+        return;
+    }
+
+    alert("User registered successfully");
+}
+
+async function loginUser(){
+
+    const username =
+    document.getElementById("username").value;
+
+    const password =
+    document.getElementById("password").value;
+
+    const response = await fetch(
+        `${BASE_URL}/api/arthika/login`,
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                username,password
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+        alert(data.detail || "Login failed");
+        return;
+    }
+
+    localStorage.setItem(
+        "token",
+        data.access_token
+    );
+
+    token = data.access_token;
+
+    alert("Login successful");
+
+    showStockUI();
+
+    loadPortfolio();
+}
+
+function showStockUI(){
+
+    document
+    .getElementById("authCard")
+    .classList.add("hidden");
+
+    document
+    .getElementById("stockCard")
+    .classList.remove("hidden");
+
+    document
+    .getElementById("portfolioCard")
+    .classList.remove("hidden");
+
+    document
+    .getElementById("logoutBtn")
+    .classList.remove("hidden");
+}
+
+function logout(){
+
+    localStorage.removeItem("token");
+
+    token = null;
+
+    location.reload();
+}
+
+async function addStock(){
+
+    const name =
+    document.getElementById("name").value;
+
+    const quantity =
+    document.getElementById("quantity").value;
+
+    const purchase_value =
+    document.getElementById("purchase_value").value;
+
+    const present_value =
+    document.getElementById("present_value").value;
+
+    await fetch(
+        `${BASE_URL}/api/arthika/${name}/stock`,
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "Authorization":`Bearer ${token}`
+            },
+            body:JSON.stringify({
+                name,
+                quantity,
+                purchase_value,
+                present_value
+            })
+        }
+    );
+
+    alert("Stock added successfully");
+
+    loadPortfolio();
+}
+
+async function loadPortfolio(){
+
+    const response = await fetch(
+        `${BASE_URL}/api/arthika/stocks`,
+        {
+            headers:{
+                "Authorization":`Bearer ${token}`
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    const table =
+    document.querySelector(
+        "#portfolioTable tbody"
+    );
+
+    table.innerHTML = "";
+
+    data.forEach(stock=>{
+
+        table.innerHTML += `
+        <tr>
+            <td>${stock.name}</td>
+            <td>${stock.quantity}</td>
+            <td>${stock.purchase_value}</td>
+            <td>${stock.present_value}</td>
+        </tr>
+        `;
+
+    });
+
+}
+
+</script>
+
 </body>
 </html>
